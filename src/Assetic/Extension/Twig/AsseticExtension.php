@@ -1,7 +1,18 @@
-<?php namespace Assetic\Extension\Twig;
+<?php
+
+/*
+ * This file is part of the Assetic package, an OpenSky project.
+ *
+ * (c) 2010-2014 OpenSky Project Inc
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
+
+namespace Assetic\Extension\Twig;
 
 use Assetic\Factory\AssetFactory;
-use Assetic\Contracts\ValueSupplierInterface;
+use Assetic\ValueSupplierInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
 
@@ -13,46 +24,46 @@ class AsseticExtension extends AbstractExtension implements GlobalsInterface
 
     public function __construct(AssetFactory $factory, $functions = [], ValueSupplierInterface $valueSupplier = null)
     {
-        $this->factory = $factory;
-        $this->functions = [];
+        $this->factory       = $factory;
+        $this->functions     = [];
         $this->valueSupplier = $valueSupplier;
 
         foreach ($functions as $function => $options) {
             if (is_integer($function) && is_string($options)) {
-                $this->functions[$options] = array('filter' => $options);
+                $this->functions[$options] = ['filter' => $options];
             } else {
-                $this->functions[$function] = $options + array('filter' => $function);
+                $this->functions[$function] = $options + ['filter' => $function];
             }
         }
     }
 
     public function getTokenParsers()
     {
-        return array(
+        return [
             new AsseticTokenParser($this->factory, 'javascripts', 'js/*.js'),
             new AsseticTokenParser($this->factory, 'stylesheets', 'css/*.css'),
             new AsseticTokenParser($this->factory, 'image', 'images/*', true),
-        );
+        ];
     }
 
     public function getFunctions()
     {
         $functions = [];
         foreach ($this->functions as $function => $filter) {
-            $functions[] = AsseticFilterFunction::make($this, $function);
+            $functions[] = new AsseticFilterFunction($function);
         }
 
         return $functions;
     }
 
-    public function getGlobals()
+    public function getGlobals(): array
     {
-        return array(
-            'assetic' => array(
+        return [
+            'assetic' => [
                 'debug' => $this->factory->isDebug(),
                 'vars'  => null !== $this->valueSupplier ? new ValueContainer($this->valueSupplier) : [],
-            ),
-        );
+            ],
+        ];
     }
 
     public function getFilterInvoker($function)
