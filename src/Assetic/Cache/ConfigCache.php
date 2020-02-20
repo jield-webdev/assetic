@@ -57,7 +57,7 @@ class ConfigCache
     {
         $path = $this->getSourcePath($resource);
 
-        if (!is_dir($dir = dirname($path)) && false === @mkdir($dir, 0777, true)) {
+        if (!is_dir($dir = dirname($path)) && !mkdir($dir, 0777, true) && !is_dir($dir)) {
             // @codeCoverageIgnoreStart
             throw new RuntimeException('Unable to create directory ' . $dir);
             // @codeCoverageIgnoreEnd
