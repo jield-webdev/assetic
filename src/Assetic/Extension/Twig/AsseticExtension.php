@@ -1,18 +1,7 @@
-<?php
+<?php namespace Assetic\Extension\Twig;
 
-/*
- * This file is part of the Assetic package, an OpenSky project.
- *
- * (c) 2010-2014 OpenSky Project Inc
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
-namespace Assetic\Extension\Twig;
-
+use Assetic\Contracts\ValueSupplierInterface;
 use Assetic\Factory\AssetFactory;
-use Assetic\ValueSupplierInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
 
@@ -50,7 +39,7 @@ class AsseticExtension extends AbstractExtension implements GlobalsInterface
     {
         $functions = [];
         foreach ($this->functions as $function => $filter) {
-            $functions[] = new AsseticFilterFunction($function);
+            $functions[] = AsseticFilterFunction::make($this, $function);
         }
 
         return $functions;

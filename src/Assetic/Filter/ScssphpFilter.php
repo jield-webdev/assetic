@@ -4,6 +4,7 @@ use Assetic\Contracts\Asset\AssetInterface;
 use Assetic\Contracts\Filter\DependencyExtractorInterface;
 use Assetic\Factory\AssetFactory;
 use Assetic\Util\CssUtils;
+use scss_compass;
 use ScssPhp\ScssPhp\Compiler;
 
 /**
@@ -25,7 +26,7 @@ class ScssphpFilter extends BaseFilter implements DependencyExtractorInterface
 
     public function enableCompass($enable = true)
     {
-        $this->compass = (Boolean) $enable;
+        $this->compass = (boolean)$enable;
     }
 
     public function isCompassEnabled()
@@ -35,12 +36,12 @@ class ScssphpFilter extends BaseFilter implements DependencyExtractorInterface
 
     public function setFormatter($formatter)
     {
-        $legacyFormatters = array(
-            'scss_formatter' => 'ScssPhp\ScssPhp\Formatter\Expanded',
-            'scss_formatter_nested' => 'ScssPhp\ScssPhp\Formatter\Nested',
+        $legacyFormatters = [
+            'scss_formatter'            => 'ScssPhp\ScssPhp\Formatter\Expanded',
+            'scss_formatter_nested'     => 'ScssPhp\ScssPhp\Formatter\Nested',
             'scss_formatter_compressed' => 'ScssPhp\ScssPhp\Formatter\Compressed',
-            'scss_formatter_crunched' => 'ScssPhp\ScssPhp\Formatter\Crunched',
-        );
+            'scss_formatter_crunched'   => 'ScssPhp\ScssPhp\Formatter\Crunched',
+        ];
 
         if (isset($legacyFormatters[$formatter])) {
             @trigger_error(sprintf('The scssphp formatter `%s` is deprecated. Use `%s` instead.', $formatter, $legacyFormatters[$formatter]), E_USER_DEPRECATED);
@@ -81,7 +82,7 @@ class ScssphpFilter extends BaseFilter implements DependencyExtractorInterface
         $sc = new Compiler();
 
         if ($this->compass) {
-            new \scss_compass($sc);
+            new scss_compass($sc);
         }
 
         if ($dir = $asset->getSourceDirectory()) {
@@ -122,7 +123,7 @@ class ScssphpFilter extends BaseFilter implements DependencyExtractorInterface
         foreach (CssUtils::extractImports($content) as $match) {
             $file = $sc->findImport($match);
             if ($file) {
-                $children[] = $child = $factory->createAsset($file, [], array('root' => $loadPath));
+                $children[] = $child = $factory->createAsset($file, [], ['root' => $loadPath]);
                 $child->load();
                 $children = array_merge($children, $this->getChildren($factory, $child->getContent(), $loadPath));
             }

@@ -1,6 +1,7 @@
 <?php namespace Assetic\Filter;
 
 use Assetic\Contracts\Asset\AssetInterface;
+use JSqueeze;
 
 /**
  * JSqueeze filter.
@@ -24,13 +25,13 @@ class JSqueezeFilter extends BaseFilter
             $this->defaultRx = \Patchwork\JSqueeze::SPECIAL_VAR_PACKER;
         } else {
             $this->className = '\\JSqueeze';
-            $this->defaultRx = \JSqueeze::SPECIAL_VAR_RX;
+            $this->defaultRx = JSqueeze::SPECIAL_VAR_RX;
         }
     }
 
     public function setSingleLine($bool)
     {
-        $this->singleLine = (bool) $bool;
+        $this->singleLine = (bool)$bool;
     }
 
     // call setSpecialVarRx(true) to enable global var/method/property
@@ -46,7 +47,7 @@ class JSqueezeFilter extends BaseFilter
 
     public function keepImportantComments($bool)
     {
-        $this->keepImportantComments = (bool) $bool;
+        $this->keepImportantComments = (bool)$bool;
     }
 
     public function filterDump(AssetInterface $asset)

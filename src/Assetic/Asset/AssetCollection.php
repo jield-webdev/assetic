@@ -2,17 +2,21 @@
 
 use Assetic\Asset\Iterator\AssetCollectionFilterIterator;
 use Assetic\Asset\Iterator\AssetCollectionIterator;
-use Assetic\Filter\FilterCollection;
-use Assetic\Contracts\Filter\FilterInterface;
 use Assetic\Contracts\Asset\AssetCollectionInterface;
 use Assetic\Contracts\Asset\AssetInterface;
+use Assetic\Contracts\Filter\FilterInterface;
+use Assetic\Filter\FilterCollection;
+use InvalidArgumentException;
+use IteratorAggregate;
+use RecursiveIteratorIterator;
+use SplObjectStorage;
 
 /**
  * A collection of assets.
  *
  * @author Kris Wallsmith <kris.wallsmith@gmail.com>
  */
-class AssetCollection implements \IteratorAggregate, AssetCollectionInterface
+class AssetCollection implements IteratorAggregate, AssetCollectionInterface
 {
     private $assets;
     private $filters;
@@ -26,10 +30,10 @@ class AssetCollection implements \IteratorAggregate, AssetCollectionInterface
     /**
      * Constructor.
      *
-     * @param array  $assets     Assets for the current collection
-     * @param array  $filters    Filters for the current collection
+     * @param array $assets Assets for the current collection
+     * @param array $filters Filters for the current collection
      * @param string $sourceRoot The root directory
-     * @param array  $vars
+     * @param array $vars
      */
     public function __construct($assets = [], $filters = [], $sourceRoot = null, array $vars = [])
     {
@@ -38,22 +42,11 @@ class AssetCollection implements \IteratorAggregate, AssetCollectionInterface
             $this->add($asset);
         }
 
-        $this->filters = new FilterCollection($filters);
+        $this->filters    = new FilterCollection($filters);
         $this->sourceRoot = $sourceRoot;
-        $this->clones = new \SplObjectStorage();
-        $this->vars = $vars;
-        $this->values = [];
-    }
-
-    public function __clone()
-    {
-        $this->filters = clone $this->filters;
-        $this->clones = new \SplObjectStorage();
-    }
-
-    public function all()
-    {
-        return $this->assets;
+        $this->clones     = new SplObjectStorage();
+        $this->vars       = $vars;
+        $this->values     = [];
     }
 
     public function add(AssetInterface $asset)
@@ -61,11 +54,22 @@ class AssetCollection implements \IteratorAggregate, AssetCollectionInterface
         $this->assets[] = $asset;
     }
 
+    public function __clone()
+    {
+        $this->filters = clone $this->filters;
+        $this->clones  = new SplObjectStorage();
+    }
+
+    public function all()
+    {
+        return $this->assets;
+    }
+
     public function removeLeaf(AssetInterface $needle, $graceful = false)
     {
         foreach ($this->assets as $i => $asset) {
             $clone = isset($this->clones[$asset]) ? $this->clones[$asset] : null;
-            if (in_array($needle, array($asset, $clone), true)) {
+            if (in_array($needle, [$asset, $clone], true)) {
                 unset($this->clones[$asset], $this->assets[$i]);
 
                 return true;
@@ -80,14 +84,14 @@ class AssetCollection implements \IteratorAggregate, AssetCollectionInterface
             return false;
         }
 
-        throw new \InvalidArgumentException('Leaf not found.');
+        throw new InvalidArgumentException('Leaf not found.');
     }
 
     public function replaceLeaf(AssetInterface $needle, AssetInterface $replacement, $graceful = false)
     {
         foreach ($this->assets as $i => $asset) {
             $clone = isset($this->clones[$asset]) ? $this->clones[$asset] : null;
-            if (in_array($needle, array($asset, $clone), true)) {
+            if (in_array($needle, [$asset, $clone], true)) {
                 unset($this->clones[$asset]);
                 $this->assets[$i] = $replacement;
 
@@ -103,7 +107,7 @@ class AssetCollection implements \IteratorAggregate, AssetCollectionInterface
             return false;
         }
 
-        throw new \InvalidArgumentException('Leaf not found.');
+        throw new InvalidArgumentException('Leaf not found.');
     }
 
     public function ensureFilter(FilterInterface $filter)
@@ -119,7 +123,7 @@ class AssetCollection implements \IteratorAggregate, AssetCollectionInterface
     public function clearFilters()
     {
         $this->filters->clear();
-        $this->clones = new \SplObjectStorage();
+        $this->clones = new SplObjectStorage();
     }
 
     public function load(FilterInterface $additionalFilter = null)
@@ -181,7 +185,7 @@ class AssetCollection implements \IteratorAggregate, AssetCollectionInterface
     /**
      * Returns the highest last-modified value of all assets in the current collection.
      *
-     * @return integer|null A UNIX timestamp
+     * @return int|null A UNIX timestamp
      */
     public function getLastModified()
     {
@@ -205,12 +209,17 @@ class AssetCollection implements \IteratorAggregate, AssetCollectionInterface
      */
     public function getIterator()
     {
-        return new \RecursiveIteratorIterator(new AssetCollectionFilterIterator(new AssetCollectionIterator($this, $this->clones)));
+        return new RecursiveIteratorIterator(new AssetCollectionFilterIterator(new AssetCollectionIterator($this, $this->clones)));
     }
 
     public function getVars()
     {
         return $this->vars;
+    }
+
+    public function getValues()
+    {
+        return $this->values;
     }
 
     public function setValues(array $values)
@@ -220,10 +229,5 @@ class AssetCollection implements \IteratorAggregate, AssetCollectionInterface
         foreach ($this as $asset) {
             $asset->setValues(array_intersect_key($values, array_flip($asset->getVars())));
         }
-    }
-
-    public function getValues()
-    {
-        return $this->values;
     }
 }

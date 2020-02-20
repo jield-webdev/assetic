@@ -1,5 +1,8 @@
 <?php namespace Assetic\Filter;
 
+use Exception;
+use RuntimeException;
+
 abstract class BaseNodeFilter extends BaseProcessFilter
 {
     /**
@@ -24,6 +27,21 @@ abstract class BaseNodeFilter extends BaseProcessFilter
         parent::__construct($binaryPath);
     }
 
+    public function getNodePaths()
+    {
+        return $this->nodePaths;
+    }
+
+    public function setNodePaths(array $nodePaths)
+    {
+        $this->nodePaths = $nodePaths;
+    }
+
+    public function addNodePath($nodePath)
+    {
+        $this->nodePaths[] = $nodePath;
+    }
+
     /**
      * Get the arguments to be passed to the process regarding the process path
      *
@@ -43,31 +61,16 @@ abstract class BaseNodeFilter extends BaseProcessFilter
     {
         try {
             $result = parent::runProcess($input, $arguments);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->cleanUp();
             if ($this->processReturnCode === 127) {
-                throw new \RuntimeException('Path to node executable could not be resolved.');
+                throw new RuntimeException('Path to node executable could not be resolved.');
             } else {
                 throw $e;
             }
         }
 
         return $result;
-    }
-
-    public function getNodePaths()
-    {
-        return $this->nodePaths;
-    }
-
-    public function setNodePaths(array $nodePaths)
-    {
-        $this->nodePaths = $nodePaths;
-    }
-
-    public function addNodePath($nodePath)
-    {
-        $this->nodePaths[] = $nodePath;
     }
 
     protected function createProcess(array $arguments = [])

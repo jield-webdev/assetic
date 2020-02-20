@@ -1,9 +1,11 @@
 <?php namespace Assetic\Factory;
 
-use Assetic\Contracts\Asset\AssetInterface;
 use Assetic\AssetManager;
+use Assetic\Contracts\Asset\AssetInterface;
 use Assetic\Contracts\Factory\Loader\FormulaLoaderInterface;
 use Assetic\Contracts\Factory\Resource\ResourceInterface;
+use InvalidArgumentException;
+use LogicException;
 
 /**
  * A lazy asset manager is a composition of a factory and many formula loaders.
@@ -23,16 +25,16 @@ class LazyAssetManager extends AssetManager
      * Constructor.
      *
      * @param AssetFactory $factory The asset factory
-     * @param array        $loaders An array of loaders indexed by alias
+     * @param array $loaders An array of loaders indexed by alias
      */
     public function __construct(AssetFactory $factory, $loaders = [])
     {
-        $this->factory = $factory;
-        $this->loaders = [];
+        $this->factory   = $factory;
+        $this->loaders   = [];
         $this->resources = [];
-        $this->formulae = [];
-        $this->loaded = false;
-        $this->loading = false;
+        $this->formulae  = [];
+        $this->loaded    = false;
+        $this->loading   = false;
 
         foreach ($loaders as $alias => $loader) {
             $this->setLoader($alias, $loader);
@@ -42,25 +44,25 @@ class LazyAssetManager extends AssetManager
     /**
      * Adds a loader to the asset manager.
      *
-     * @param string                 $alias  An alias for the loader
+     * @param string $alias An alias for the loader
      * @param FormulaLoaderInterface $loader A loader
      */
     public function setLoader($alias, FormulaLoaderInterface $loader)
     {
         $this->loaders[$alias] = $loader;
-        $this->loaded = false;
+        $this->loaded          = false;
     }
 
     /**
      * Adds a resource to the asset manager.
      *
      * @param ResourceInterface $resource A resource
-     * @param string            $loader   The loader alias for this resource
+     * @param string $loader The loader alias for this resource
      */
     public function addResource(ResourceInterface $resource, $loader)
     {
         $this->resources[$loader][] = $resource;
-        $this->loaded = false;
+        $this->loaded               = false;
     }
 
     /**
@@ -95,42 +97,9 @@ class LazyAssetManager extends AssetManager
     }
 
     /**
-     * Returns an asset's formula.
-     *
-     * @param string $name An asset name
-     *
-     * @return array The formula
-     *
-     * @throws \InvalidArgumentException If there is no formula by that name
-     */
-    public function getFormula($name)
-    {
-        if (!$this->loaded) {
-            $this->load();
-        }
-
-        if (!isset($this->formulae[$name])) {
-            throw new \InvalidArgumentException(sprintf('There is no "%s" formula.', $name));
-        }
-
-        return $this->formulae[$name];
-    }
-
-    /**
-     * Sets a formula on the asset manager.
-     *
-     * @param string $name    An asset name
-     * @param array  $formula A formula
-     */
-    public function setFormula($name, array $formula)
-    {
-        $this->formulae[$name] = $formula;
-    }
-
-    /**
      * Loads formulae from resources.
      *
-     * @throws \LogicException If a resource has been added to an invalid loader
+     * @throws LogicException If a resource has been added to an invalid loader
      */
     public function load()
     {
@@ -139,7 +108,7 @@ class LazyAssetManager extends AssetManager
         }
 
         if ($diff = array_diff(array_keys($this->resources), array_keys($this->loaders))) {
-            throw new \LogicException('The following loader(s) are not registered: '.implode(', ', $diff));
+            throw new LogicException('The following loader(s) are not registered: ' . implode(', ', $diff));
         }
 
         $this->loading = true;
@@ -150,8 +119,41 @@ class LazyAssetManager extends AssetManager
             }
         }
 
-        $this->loaded = true;
+        $this->loaded  = true;
         $this->loading = false;
+    }
+
+    /**
+     * Returns an asset's formula.
+     *
+     * @param string $name An asset name
+     *
+     * @return array The formula
+     *
+     * @throws InvalidArgumentException If there is no formula by that name
+     */
+    public function getFormula($name)
+    {
+        if (!$this->loaded) {
+            $this->load();
+        }
+
+        if (!isset($this->formulae[$name])) {
+            throw new InvalidArgumentException(sprintf('There is no "%s" formula.', $name));
+        }
+
+        return $this->formulae[$name];
+    }
+
+    /**
+     * Sets a formula on the asset manager.
+     *
+     * @param string $name An asset name
+     * @param array $formula A formula
+     */
+    public function setFormula($name, array $formula)
+    {
+        $this->formulae[$name] = $formula;
     }
 
     public function get($name)
@@ -161,7 +163,7 @@ class LazyAssetManager extends AssetManager
         }
 
         if (!parent::has($name) && isset($this->formulae[$name])) {
-            list($inputs, $filters, $options) = $this->formulae[$name];
+            [$inputs, $filters, $options] = $this->formulae[$name];
             $options['name'] = $name;
             parent::set($name, $this->factory->createAsset($inputs, $filters, $options));
         }

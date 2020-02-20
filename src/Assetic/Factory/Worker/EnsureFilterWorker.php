@@ -1,9 +1,9 @@
 <?php namespace Assetic\Factory\Worker;
 
 use Assetic\Contracts\Asset\AssetInterface;
-use Assetic\Factory\AssetFactory;
-use Assetic\Contracts\Filter\FilterInterface;
 use Assetic\Contracts\Factory\Worker\WorkerInterface;
+use Assetic\Contracts\Filter\FilterInterface;
+use Assetic\Factory\AssetFactory;
 
 /**
  * Applies a filter to an asset based on a source and/or target path match.
@@ -13,8 +13,8 @@ use Assetic\Contracts\Factory\Worker\WorkerInterface;
  */
 class EnsureFilterWorker implements WorkerInterface
 {
-    const CHECK_SOURCE = 1;
-    const CHECK_TARGET = 2;
+    public const CHECK_SOURCE = 1;
+    public const CHECK_TARGET = 2;
 
     private $pattern;
     private $filter;
@@ -23,9 +23,9 @@ class EnsureFilterWorker implements WorkerInterface
     /**
      * Constructor.
      *
-     * @param string          $pattern A regex for checking the asset's target URL
-     * @param FilterInterface $filter  A filter to apply if the regex matches
-     * @param integer         $flags   Flags for what to check
+     * @param string $pattern A regex for checking the asset's target URL
+     * @param FilterInterface $filter A filter to apply if the regex matches
+     * @param int $flags Flags for what to check
      */
     public function __construct($pattern, FilterInterface $filter, $flags = null)
     {
@@ -34,8 +34,8 @@ class EnsureFilterWorker implements WorkerInterface
         }
 
         $this->pattern = $pattern;
-        $this->filter = $filter;
-        $this->flags = $flags;
+        $this->filter  = $filter;
+        $this->flags   = $flags;
     }
 
     public function process(AssetInterface $asset, AssetFactory $factory)

@@ -3,6 +3,7 @@
 use Assetic\Contracts\Asset\AssetInterface;
 use Assetic\Exception\FilterException;
 use Assetic\Util\FilesystemUtils;
+use RuntimeException;
 
 /**
  * UglifyJs2 filter.
@@ -25,7 +26,7 @@ class UglifyJs2Filter extends BaseNodeFilter
     public function __construct($uglifyjsBin = '/usr/bin/uglifyjs', $nodeBin = null)
     {
         $this->uglifyjsBin = $uglifyjsBin;
-        $this->nodeBin = $nodeBin;
+        $this->nodeBin     = $nodeBin;
     }
 
     public function setCompress($compress)
@@ -66,8 +67,8 @@ class UglifyJs2Filter extends BaseNodeFilter
     public function filterDump(AssetInterface $asset)
     {
         $args = $this->nodeBin
-            ? array($this->nodeBin, $this->uglifyjsBin)
-            : array($this->uglifyjsBin);
+            ? [$this->nodeBin, $this->uglifyjsBin]
+            : [$this->uglifyjsBin];
 
         if ($this->compress) {
             $args[] = '--compress';
@@ -123,14 +124,14 @@ class UglifyJs2Filter extends BaseNodeFilter
             }
 
             if (127 === $code) {
-                throw new \RuntimeException('Path to node executable could not be resolved.');
+                throw new RuntimeException('Path to node executable could not be resolved.');
             }
 
             throw FilterException::fromProcess($process)->setInput($asset->getContent());
         }
 
         if (!file_exists($output)) {
-            throw new \RuntimeException('Error creating output file.');
+            throw new RuntimeException('Error creating output file.');
         }
 
         $asset->setContent(file_get_contents($output));

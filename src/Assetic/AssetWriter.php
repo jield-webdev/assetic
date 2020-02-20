@@ -2,6 +2,8 @@
 
 use Assetic\Contracts\Asset\AssetInterface;
 use Assetic\Util\VarUtils;
+use InvalidArgumentException;
+use RuntimeException;
 
 /**
  * Writes assets to the filesystem.
@@ -17,22 +19,22 @@ class AssetWriter
     /**
      * Constructor.
      *
-     * @param string $dir    The base web directory
-     * @param array  $values Variable values
+     * @param string $dir The base web directory
+     * @param array $values Variable values
      *
-     * @throws \InvalidArgumentException if a variable value is not a string
+     * @throws InvalidArgumentException if a variable value is not a string
      */
     public function __construct($dir, array $values = [])
     {
         foreach ($values as $var => $vals) {
             foreach ($vals as $value) {
                 if (!is_string($value)) {
-                    throw new \InvalidArgumentException(sprintf('All variable values must be strings, but got %s for variable "%s".', json_encode($value), $var));
+                    throw new InvalidArgumentException(sprintf('All variable values must be strings, but got %s for variable "%s".', json_encode($value), $var));
                 }
             }
         }
 
-        $this->dir = $dir;
+        $this->dir    = $dir;
         $this->values = $values;
     }
 
@@ -49,7 +51,7 @@ class AssetWriter
             $asset->setValues($combination);
 
             static::write(
-                $this->dir.'/'.VarUtils::resolve(
+                $this->dir . '/' . VarUtils::resolve(
                     $asset->getTargetPath(),
                     $asset->getVars(),
                     $asset->getValues()
@@ -62,11 +64,11 @@ class AssetWriter
     protected static function write($path, $contents)
     {
         if (!is_dir($dir = dirname($path)) && false === @mkdir($dir, 0777, true)) {
-            throw new \RuntimeException('Unable to create directory '.$dir);
+            throw new RuntimeException('Unable to create directory ' . $dir);
         }
 
         if (false === @file_put_contents($path, $contents)) {
-            throw new \RuntimeException('Unable to write file '.$path);
+            throw new RuntimeException('Unable to write file ' . $path);
         }
     }
 

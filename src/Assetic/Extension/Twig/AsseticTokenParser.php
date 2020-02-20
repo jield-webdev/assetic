@@ -2,10 +2,13 @@
 
 use Assetic\Contracts\Asset\AssetInterface;
 use Assetic\Factory\AssetFactory;
-use Twig\TokenParser\AbstractTokenParser;
-use Twig\Token;
-use Twig\Node\Node;
+use InvalidArgumentException;
+use ReflectionException;
+use ReflectionMethod;
 use Twig\Error\SyntaxError;
+use Twig\Node\Node;
+use Twig\Token;
+use Twig\TokenParser\AbstractTokenParser;
 
 class AsseticTokenParser extends AbstractTokenParser
 {
@@ -21,11 +24,11 @@ class AsseticTokenParser extends AbstractTokenParser
      * Attributes can be added to the tag by passing names as the options
      * array. These values, if found, will be passed to the factory and node.
      *
-     * @param AssetFactory $factory    The asset factory
-     * @param string       $tag        The tag name
-     * @param string       $output     The default output string
-     * @param Boolean      $single     Whether to force a single asset
-     * @param array        $extensions Additional attribute names to look for
+     * @param AssetFactory $factory The asset factory
+     * @param string $tag The tag name
+     * @param string $output The default output string
+     * @param Boolean $single Whether to force a single asset
+     * @param array $extensions Additional attribute names to look for
      */
     public function __construct(AssetFactory $factory, $tag, $output, $single = false, array $extensions = [])
     {
@@ -38,14 +41,14 @@ class AsseticTokenParser extends AbstractTokenParser
 
     public function parse(Token $token)
     {
-        $inputs = [];
-        $filters = [];
-        $name = null;
-        $attributes = array(
+        $inputs     = [];
+        $filters    = [];
+        $name       = null;
+        $attributes = [
             'output'   => $this->output,
             'var_name' => 'asset_url',
             'vars'     => [],
-        );
+        ];
 
         $stream = $this->parser->getStream();
         while (!$stream->test(Token::BLOCK_END_TYPE)) {
@@ -76,12 +79,12 @@ class AsseticTokenParser extends AbstractTokenParser
                 // debug=true
                 $stream->next();
                 $stream->expect(Token::OPERATOR_TYPE, '=');
-                $attributes['debug'] = 'true' == $stream->expect(Token::NAME_TYPE, array('true', 'false'))->getValue();
+                $attributes['debug'] = 'true' == $stream->expect(Token::NAME_TYPE, ['true', 'false'])->getValue();
             } elseif ($stream->test(Token::NAME_TYPE, 'combine')) {
                 // combine=true
                 $stream->next();
                 $stream->expect(Token::OPERATOR_TYPE, '=');
-                $attributes['combine'] = 'true' == $stream->expect(Token::NAME_TYPE, array('true', 'false'))->getValue();
+                $attributes['combine'] = 'true' == $stream->expect(Token::NAME_TYPE, ['true', 'false'])->getValue();
             } elseif ($stream->test(Token::NAME_TYPE, 'vars')) {
                 // vars=['locale','browser']
                 $stream->next();
@@ -118,7 +121,7 @@ class AsseticTokenParser extends AbstractTokenParser
 
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        $body = $this->parser->subparse(array($this, 'testEndTag'), true);
+        $body = $this->parser->subparse([$this, 'testEndTag'], true);
 
         $stream->expect(Token::BLOCK_END_TYPE);
 
@@ -130,19 +133,9 @@ class AsseticTokenParser extends AbstractTokenParser
             $name = $this->factory->generateAssetName($inputs, $filters, $attributes);
         }
 
-        $asset = $this->factory->createAsset($inputs, $filters, $attributes + array('name' => $name));
+        $asset = $this->factory->createAsset($inputs, $filters, $attributes + ['name' => $name]);
 
         return $this->createBodyNode($asset, $body, $inputs, $filters, $name, $attributes, $token->getLine(), $this->getTag());
-    }
-
-    public function getTag()
-    {
-        return $this->tag;
-    }
-
-    public function testEndTag(Token $token)
-    {
-        return $token->test(array('end'.$this->getTag()));
     }
 
     /**
@@ -156,11 +149,11 @@ class AsseticTokenParser extends AbstractTokenParser
      * @param string $tag
      *
      * @return Node
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     protected function createBodyNode(AssetInterface $asset, Node $body, array $inputs, array $filters, $name, array $attributes = [], $lineno = 0, $tag = null)
     {
-        $reflector = new \ReflectionMethod($this, 'createNode');
+        $reflector = new ReflectionMethod($this, 'createNode');
 
         if (__CLASS__ !== $reflector->getDeclaringClass()->name) {
             @trigger_error(sprintf('Overwriting %s::createNode is deprecated since 1.3. Overwrite %s instead.', __CLASS__, __METHOD__), E_USER_DEPRECATED);
@@ -172,14 +165,14 @@ class AsseticTokenParser extends AbstractTokenParser
     }
 
     /**
-     * @param AssetInterface      $asset
-     * @param Node                $body
-     * @param array               $inputs
-     * @param array               $filters
-     * @param string              $name
-     * @param array               $attributes
-     * @param int                 $lineno
-     * @param string              $tag
+     * @param AssetInterface $asset
+     * @param Node $body
+     * @param array $inputs
+     * @param array $filters
+     * @param string $name
+     * @param array $attributes
+     * @param int $lineno
+     * @param string $tag
      *
      * @return Node
      *
@@ -190,9 +183,19 @@ class AsseticTokenParser extends AbstractTokenParser
         @trigger_error(sprintf('The %s method is deprecated since 1.3 and will be removed in 2.0. Use createBodyNode instead.', __METHOD__), E_USER_DEPRECATED);
 
         if (!$body instanceof Node) {
-            throw new \InvalidArgumentException('The body must be a Twig\Node\Node. Custom implementations of Node are not supported.');
+            throw new InvalidArgumentException('The body must be a Twig\Node\Node. Custom implementations of Node are not supported.');
         }
 
         return new AsseticNode($asset, $body, $inputs, $filters, $name, $attributes, $lineno, $tag);
+    }
+
+    public function getTag()
+    {
+        return $this->tag;
+    }
+
+    public function testEndTag(Token $token)
+    {
+        return $token->test(['end' . $this->getTag()]);
     }
 }

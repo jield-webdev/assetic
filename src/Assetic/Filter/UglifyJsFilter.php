@@ -3,6 +3,7 @@
 use Assetic\Contracts\Asset\AssetInterface;
 use Assetic\Exception\FilterException;
 use Assetic\Util\FilesystemUtils;
+use RuntimeException;
 
 /**
  * UglifyJs filter.
@@ -24,12 +25,12 @@ class UglifyJsFilter extends BaseNodeFilter
 
     /**
      * @param string $uglifyjsBin Absolute path to the uglifyjs executable
-     * @param string $nodeBin     Absolute path to the folder containg node.js executable
+     * @param string $nodeBin Absolute path to the folder containg node.js executable
      */
     public function __construct($uglifyjsBin = '/usr/bin/uglifyjs', $nodeBin = null)
     {
         $this->uglifyjsBin = $uglifyjsBin;
-        $this->nodeBin = $nodeBin;
+        $this->nodeBin     = $nodeBin;
     }
 
     /**
@@ -90,8 +91,8 @@ class UglifyJsFilter extends BaseNodeFilter
     public function filterDump(AssetInterface $asset)
     {
         $args = $this->nodeBin
-            ? array($this->nodeBin, $this->uglifyjsBin)
-            : array($this->uglifyjsBin);
+            ? [$this->nodeBin, $this->uglifyjsBin]
+            : [$this->uglifyjsBin];
 
         if ($this->noCopyright) {
             $args[] = '--no-copyright';
@@ -130,7 +131,7 @@ class UglifyJsFilter extends BaseNodeFilter
         $args[] = $input;
 
         $process = $this->createProcess($args);
-        $code = $process->run();
+        $code    = $process->run();
         unlink($input);
 
         if (0 !== $code) {
@@ -139,14 +140,14 @@ class UglifyJsFilter extends BaseNodeFilter
             }
 
             if (127 === $code) {
-                throw new \RuntimeException('Path to node executable could not be resolved.');
+                throw new RuntimeException('Path to node executable could not be resolved.');
             }
 
             throw FilterException::fromProcess($process)->setInput($asset->getContent());
         }
 
         if (!file_exists($output)) {
-            throw new \RuntimeException('Error creating output file.');
+            throw new RuntimeException('Error creating output file.');
         }
 
         $uglifiedJs = file_get_contents($output);

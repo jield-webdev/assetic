@@ -1,8 +1,6 @@
 <?php namespace Assetic\Filter;
 
 use Assetic\Contracts\Asset\AssetInterface;
-use Assetic\Exception\FilterException;
-use Assetic\Util\FilesystemUtils;
 
 /**
  * UglifyCss filter.

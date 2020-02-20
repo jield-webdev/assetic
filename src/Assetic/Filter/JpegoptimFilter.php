@@ -27,12 +27,12 @@ class JpegoptimFilter extends BaseProcessFilter
      */
 
     /**
-     * @var boolean Strip all markers from the output
+     * @var bool Strip all markers from the output
      */
     private $stripAll;
 
     /**
-     * @var integer Maximum image quality factor
+     * @var int Maximum image quality factor
      */
     private $max;
 

@@ -10,7 +10,7 @@ interface ResourceInterface
     /**
      * Checks if a timestamp represents the latest resource.
      *
-     * @param integer $timestamp A UNIX timestamp
+     * @param int $timestamp A UNIX timestamp
      *
      * @return Boolean True if the timestamp is up to date
      */

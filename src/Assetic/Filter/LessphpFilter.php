@@ -4,6 +4,7 @@ use Assetic\Contracts\Asset\AssetInterface;
 use Assetic\Contracts\Filter\DependencyExtractorInterface;
 use Assetic\Factory\AssetFactory;
 use Assetic\Util\LessUtils;
+use lessc;
 
 /**
  * Loads LESS files using the PHP implementation of less, less.php.
@@ -18,18 +19,17 @@ use Assetic\Util\LessUtils;
  */
 class LessphpFilter extends BaseFilter implements DependencyExtractorInterface
 {
-    private $presets = [];
-    private $formatter;
-    private $options = [
-        'compress' => true
-    ];
-
     /**
      * Lessphp Load Paths
      *
      * @var array
      */
     protected $loadPaths = [];
+    private $presets = [];
+    private $formatter;
+    private $options = [
+        'compress' => true
+    ];
 
     /**
      * Adds a load path to the paths used by lessphp
@@ -58,7 +58,7 @@ class LessphpFilter extends BaseFilter implements DependencyExtractorInterface
 
     public function setOptions(array $options)
     {
-    	$this->options = $options;
+        $this->options = $options;
     }
 
     /**
@@ -71,7 +71,7 @@ class LessphpFilter extends BaseFilter implements DependencyExtractorInterface
 
     public function filterLoad(AssetInterface $asset)
     {
-        $lc = new \lessc();
+        $lc = new lessc();
         if ($dir = $asset->getSourceDirectory()) {
             $lc->importDir = $dir;
         }
@@ -84,8 +84,8 @@ class LessphpFilter extends BaseFilter implements DependencyExtractorInterface
             $lc->setFormatter($this->formatter);
         }
 
-        if (method_exists($lc, 'setOptions') && count($this->options) > 0 ) {
-        	$lc->setOptions($this->options);
+        if (method_exists($lc, 'setOptions') && count($this->options) > 0) {
+            $lc->setOptions($this->options);
         }
 
         $asset->setContent($lc->parse($asset->getContent(), $this->presets));
@@ -115,8 +115,8 @@ class LessphpFilter extends BaseFilter implements DependencyExtractorInterface
             }
 
             foreach ($loadPaths as $loadPath) {
-                if (file_exists($file = $loadPath.'/'.$reference)) {
-                    $coll = $factory->createAsset($file, [], array('root' => $loadPath));
+                if (file_exists($file = $loadPath . '/' . $reference)) {
+                    $coll = $factory->createAsset($file, [], ['root' => $loadPath]);
                     foreach ($coll as $leaf) {
                         $leaf->ensureFilter($this);
                         $children[] = $leaf;

@@ -11,12 +11,16 @@ abstract class CssUtils
     const REGEX_IMPORTS         = '/@import (?:url\()?(\'|"|)(?P<url>[^\'"\)\n\r]*)\1\)?;?/';
     const REGEX_IMPORTS_NO_URLS = '/@import (?!url\()(\'|"|)(?P<url>[^\'"\)\n\r]*)\1;?/';
     const REGEX_IE_FILTERS      = '/src=(["\']?)(?P<url>.*?)\\1/';
-    const REGEX_COMMENTS        = '/(\/\*[^*]*\*+(?:[^\/][^*]*\*+)*\/)/';
+    public const REGEX_COMMENTS = '/(\/\*[^*]*\*+(?:[^\/][^*]*\*+)*\/)/';
+
+    final private function __construct()
+    {
+    }
 
     /**
      * Filters all references -- url() and "@import" -- through a callable.
      *
-     * @param string   $content  The CSS
+     * @param string $content The CSS
      * @param callable $callback A PHP callable
      *
      * @return string The filtered CSS
@@ -33,7 +37,7 @@ abstract class CssUtils
     /**
      * Filters all CSS url()'s through a callable.
      *
-     * @param string   $content  The CSS
+     * @param string $content The CSS
      * @param callable $callback A PHP callable
      *
      * @return string The filtered CSS
@@ -48,44 +52,9 @@ abstract class CssUtils
     }
 
     /**
-     * Filters all CSS imports through a callable.
-     *
-     * @param string   $content    The CSS
-     * @param callable $callback   A PHP callable
-     * @param Boolean  $includeUrl Whether to include url() in the pattern
-     *
-     * @return string The filtered CSS
-     */
-    public static function filterImports($content, $callback, $includeUrl = true)
-    {
-        $pattern = $includeUrl ? static::REGEX_IMPORTS : static::REGEX_IMPORTS_NO_URLS;
-
-        return static::filterCommentless($content, function ($part) use (& $callback, $pattern) {
-            return preg_replace_callback($pattern, $callback, $part);
-        });
-    }
-
-    /**
-     * Filters all IE filters (AlphaImageLoader filter) through a callable.
-     *
-     * @param string   $content  The CSS
-     * @param callable $callback A PHP callable
-     *
-     * @return string The filtered CSS
-     */
-    public static function filterIEFilters($content, $callback)
-    {
-        $pattern = static::REGEX_IE_FILTERS;
-
-        return static::filterCommentless($content, function ($part) use (& $callback, $pattern) {
-            return preg_replace_callback($pattern, $callback, $part);
-        });
-    }
-
-    /**
      * Filters each non-comment part through a callable.
      *
-     * @param string   $content  The CSS
+     * @param string $content The CSS
      * @param callable $callback A PHP callable
      *
      * @return string The filtered CSS
@@ -105,6 +74,41 @@ abstract class CssUtils
     }
 
     /**
+     * Filters all CSS imports through a callable.
+     *
+     * @param string $content The CSS
+     * @param callable $callback A PHP callable
+     * @param Boolean $includeUrl Whether to include url() in the pattern
+     *
+     * @return string The filtered CSS
+     */
+    public static function filterImports($content, $callback, $includeUrl = true)
+    {
+        $pattern = $includeUrl ? static::REGEX_IMPORTS : static::REGEX_IMPORTS_NO_URLS;
+
+        return static::filterCommentless($content, function ($part) use (& $callback, $pattern) {
+            return preg_replace_callback($pattern, $callback, $part);
+        });
+    }
+
+    /**
+     * Filters all IE filters (AlphaImageLoader filter) through a callable.
+     *
+     * @param string $content The CSS
+     * @param callable $callback A PHP callable
+     *
+     * @return string The filtered CSS
+     */
+    public static function filterIEFilters($content, $callback)
+    {
+        $pattern = static::REGEX_IE_FILTERS;
+
+        return static::filterCommentless($content, function ($part) use (& $callback, $pattern) {
+            return preg_replace_callback($pattern, $callback, $part);
+        });
+    }
+
+    /**
      * Extracts all references from the supplied CSS content.
      *
      * @param string $content The CSS content
@@ -119,9 +123,5 @@ abstract class CssUtils
         });
 
         return array_unique(array_filter($imports));
-    }
-
-    final private function __construct()
-    {
     }
 }

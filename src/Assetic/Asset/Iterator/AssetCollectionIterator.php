@@ -1,6 +1,9 @@
 <?php namespace Assetic\Asset\Iterator;
 
+use Assetic\Asset\AssetInterface;
 use Assetic\Contracts\Asset\AssetCollectionInterface;
+use RecursiveIterator;
+use SplObjectStorage;
 
 /**
  * Iterates over an asset collection.
@@ -10,7 +13,7 @@ use Assetic\Contracts\Asset\AssetCollectionInterface;
  *
  * @author Kris Wallsmith <kris.wallsmith@gmail.com>
  */
-class AssetCollectionIterator implements \RecursiveIterator
+class AssetCollectionIterator implements RecursiveIterator
 {
     private $assets;
     private $filters;
@@ -18,7 +21,7 @@ class AssetCollectionIterator implements \RecursiveIterator
     private $output;
     private $clones;
 
-    public function __construct(AssetCollectionInterface $coll, \SplObjectStorage $clones)
+    public function __construct(AssetCollectionInterface $coll, SplObjectStorage $clones)
     {
         $this->assets  = $coll->all();
         $this->filters = $coll->getFilters();
@@ -29,8 +32,36 @@ class AssetCollectionIterator implements \RecursiveIterator
         if (false === $pos = strrpos($this->output, '.')) {
             $this->output .= '_*';
         } else {
-            $this->output = substr($this->output, 0, $pos).'_*'.substr($this->output, $pos);
+            $this->output = substr($this->output, 0, $pos) . '_*' . substr($this->output, $pos);
         }
+    }
+
+    public function next()
+    {
+        return next($this->assets);
+    }
+
+    public function rewind()
+    {
+        return reset($this->assets);
+    }
+
+    public function valid()
+    {
+        return false !== current($this->assets);
+    }
+
+    public function hasChildren()
+    {
+        return current($this->assets) instanceof AssetCollectionInterface;
+    }
+
+    /**
+     * @uses current()
+     */
+    public function getChildren()
+    {
+        return new self($this->current(), $this->clones);
     }
 
     /**
@@ -38,7 +69,7 @@ class AssetCollectionIterator implements \RecursiveIterator
      *
      * @param Boolean $raw Returns the unmodified asset if true
      *
-     * @return \Assetic\Asset\AssetInterface
+     * @return AssetInterface
      */
     public function current($raw = false)
     {
@@ -75,38 +106,10 @@ class AssetCollectionIterator implements \RecursiveIterator
         return key($this->assets);
     }
 
-    public function next()
-    {
-        return next($this->assets);
-    }
-
-    public function rewind()
-    {
-        return reset($this->assets);
-    }
-
-    public function valid()
-    {
-        return false !== current($this->assets);
-    }
-
-    public function hasChildren()
-    {
-        return current($this->assets) instanceof AssetCollectionInterface;
-    }
-
-    /**
-     * @uses current()
-     */
-    public function getChildren()
-    {
-        return new self($this->current(), $this->clones);
-    }
-
     private function removeDuplicateVar($name)
     {
         foreach ($this->vars as $var) {
-            $var = '{'.$var.'}';
+            $var = '{' . $var . '}';
             if (false !== strpos($name, $var) && false !== strpos($this->output, $var)) {
                 $name = str_replace($var, '', $name);
             }

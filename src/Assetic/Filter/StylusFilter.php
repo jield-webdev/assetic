@@ -1,11 +1,9 @@
 <?php namespace Assetic\Filter;
 
-use Assetic\Filter\BaseNodeFilter;
 use Assetic\Contracts\Asset\AssetInterface;
-use Assetic\Exception\FilterException;
+use Assetic\Contracts\Filter\DependencyExtractorInterface;
 use Assetic\Factory\AssetFactory;
 use Assetic\Util\FilesystemUtils;
-use Assetic\Contracts\Filter\DependencyExtractorInterface;
 
 /**
  * Loads STYL files.
@@ -29,22 +27,11 @@ class StylusFilter extends BaseNodeFilter implements DependencyExtractorInterfac
     /**
      * Enable output compression.
      *
-     * @param boolean $compress
+     * @param bool $compress
      */
     public function setCompress(bool $compress)
     {
         $this->compress = $compress;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    protected function getOutputPath()
-    {
-        $prefix = preg_replace('/[^\w]/', '', static::class);
-        $path = FilesystemUtils::createThrowAwayDirectory($prefix) . '/output.css';
-        touch($path);
-        return $path;
     }
 
     /**
@@ -77,5 +64,16 @@ class StylusFilter extends BaseNodeFilter implements DependencyExtractorInterfac
     {
         // todo
         return [];
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getOutputPath()
+    {
+        $prefix = preg_replace('/[^\w]/', '', static::class);
+        $path   = FilesystemUtils::createThrowAwayDirectory($prefix) . '/output.css';
+        touch($path);
+        return $path;
     }
 }

@@ -2,9 +2,7 @@
 
 use Assetic\Contracts\Asset\AssetInterface;
 use Assetic\Contracts\Filter\DependencyExtractorInterface;
-use Assetic\Exception\FilterException;
 use Assetic\Factory\AssetFactory;
-use Assetic\Util\FilesystemUtils;
 use Assetic\Util\LessUtils;
 
 /**
@@ -23,21 +21,18 @@ class LessFilter extends BaseNodeFilter implements DependencyExtractorInterface
     /*
      * Filter Options
      */
-
-    /**
-     * @var boolean
-     */
-    private $compress;
-
-    /**
-     * @var array
-     */
-    private $parserOptions;
-
     /**
      * @var array List of paths which less will search for includes.
      */
     protected $loadPaths = [];
+    /**
+     * @var bool
+     */
+    private $compress;
+    /**
+     * @var array
+     */
+    private $parserOptions;
 
     /**
      * @param bool $compress
@@ -125,8 +120,8 @@ class LessFilter extends BaseNodeFilter implements DependencyExtractorInterface
             }
 
             foreach ($loadPaths as $loadPath) {
-                if (file_exists($file = $loadPath.'/'.$reference)) {
-                    $coll = $factory->createAsset($file, [], array('root' => $loadPath));
+                if (file_exists($file = $loadPath . '/' . $reference)) {
+                    $coll = $factory->createAsset($file, [], ['root' => $loadPath]);
                     foreach ($coll as $leaf) {
                         $leaf->ensureFilter($this);
                         $children[] = $leaf;

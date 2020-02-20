@@ -30,7 +30,7 @@ class CssCacheBustingFilter extends BaseCssFilter
         }
 
         $version = $this->version;
-        $format = $this->format;
+        $format  = $this->format;
 
         $asset->setContent($this->filterReferences(
             $asset->getContent(),

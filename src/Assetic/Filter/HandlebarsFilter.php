@@ -1,8 +1,6 @@
 <?php namespace Assetic\Filter;
 
 use Assetic\Contracts\Asset\AssetInterface;
-use Assetic\Exception\FilterException;
-use Assetic\Util\FilesystemUtils;
 
 /**
  * Compiles Handlebars templates into Javascript.
@@ -23,12 +21,12 @@ class HandlebarsFilter extends BaseNodeFilter
      */
 
     /**
-     * @var boolean Minimize the output
+     * @var bool Minimize the output
      */
     private $minimize = false;
 
     /**
-     * @var boolean Output template function only
+     * @var bool Output template function only
      */
     private $simple = false;
 

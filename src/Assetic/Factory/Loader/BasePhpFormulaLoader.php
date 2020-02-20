@@ -1,9 +1,11 @@
 <?php namespace Assetic\Factory\Loader;
 
-use Assetic\Factory\AssetFactory;
-use Assetic\Contracts\Factory\Resource\ResourceInterface;
-use Assetic\Util\FilesystemUtils;
 use Assetic\Contracts\Factory\Loader\FormulaLoaderInterface;
+use Assetic\Contracts\Factory\Resource\ResourceInterface;
+use Assetic\Factory\AssetFactory;
+use Assetic\Util\FilesystemUtils;
+use LogicException;
+use RuntimeException;
 
 /**
  * Loads asset formulae from PHP files.
@@ -17,7 +19,7 @@ abstract class BasePhpFormulaLoader implements FormulaLoaderInterface
 
     public function __construct(AssetFactory $factory)
     {
-        $this->factory = $factory;
+        $this->factory    = $factory;
         $this->prototypes = [];
 
         foreach ($this->registerPrototypes() as $prototype => $options) {
@@ -25,47 +27,58 @@ abstract class BasePhpFormulaLoader implements FormulaLoaderInterface
         }
     }
 
+    /**
+     * Returns an array of prototypical calls and options.
+     *
+     * @return array Prototypes and options
+     */
+    abstract protected function registerPrototypes();
+
     public function addPrototype($prototype, array $options = [])
     {
-        $tokens = token_get_all('<?php '.$prototype);
+        $tokens = token_get_all('<?php ' . $prototype);
         array_shift($tokens);
 
-        $this->prototypes[$prototype] = array($tokens, $options);
+        $this->prototypes[$prototype] = [$tokens, $options];
     }
 
     public function load(ResourceInterface $resource)
     {
         if (!$nbProtos = count($this->prototypes)) {
-            throw new \LogicException('There are no prototypes registered.');
+            throw new LogicException('There are no prototypes registered.');
         }
 
-        $buffers = array_fill(0, $nbProtos, '');
-        $bufferLevels = array_fill(0, $nbProtos, 0);
+        $buffers           = array_fill(0, $nbProtos, '');
+        $bufferLevels      = array_fill(0, $nbProtos, 0);
         $buffersInWildcard = [];
 
         $tokens = token_get_all($resource->getContent());
-        $calls = [];
+        $calls  = [];
 
         while ($token = array_shift($tokens)) {
             $current = self::tokenToString($token);
             // loop through each prototype (by reference)
             foreach (array_keys($this->prototypes) as $i) {
-                $prototype = & $this->prototypes[$i][0];
-                $options = $this->prototypes[$i][1];
-                $buffer = & $buffers[$i];
-                $level = & $bufferLevels[$i];
+                $prototype = &$this->prototypes[$i][0];
+                $options   = $this->prototypes[$i][1];
+                $buffer    = &$buffers[$i];
+                $level     = &$bufferLevels[$i];
 
                 if (isset($buffersInWildcard[$i])) {
                     switch ($current) {
-                        case '(': ++$level; break;
-                        case ')': --$level; break;
+                        case '(':
+                            ++$level;
+                            break;
+                        case ')':
+                            --$level;
+                            break;
                     }
 
                     $buffer .= $current;
 
                     if (!$level) {
-                        $calls[] = array($buffer.';', $options);
-                        $buffer = '';
+                        $calls[] = [$buffer . ';', $options];
+                        $buffer  = '';
                         unset($buffersInWildcard[$i]);
                     }
                 } elseif ($current == self::tokenToString(current($prototype))) {
@@ -84,22 +97,27 @@ abstract class BasePhpFormulaLoader implements FormulaLoaderInterface
 
         $formulae = [];
         foreach ($calls as $call) {
-            $formulae += call_user_func_array(array($this, 'processCall'), $call);
+            $formulae += call_user_func_array([$this, 'processCall'], $call);
         }
 
         return $formulae;
     }
 
+    protected static function tokenToString($token)
+    {
+        return is_array($token) ? $token[1] : $token;
+    }
+
     private function processCall($call, array $protoOptions = [])
     {
         $tmp = FilesystemUtils::createTemporaryFile('php_formula_loader');
-        file_put_contents($tmp, implode("\n", array(
+        file_put_contents($tmp, implode("\n", [
             '<?php',
             $this->registerSetupCode(),
             $call,
             'echo serialize($_call);',
-        )));
-        $args = unserialize(shell_exec('php '.escapeshellarg($tmp)));
+        ]));
+        $args = unserialize(shell_exec('php ' . escapeshellarg($tmp)));
         unlink($tmp);
 
         $inputs  = isset($args[0]) ? self::argumentToArray($args[0]) : [];
@@ -111,7 +129,7 @@ abstract class BasePhpFormulaLoader implements FormulaLoaderInterface
         }
 
         if (!is_array($options)) {
-            throw new \RuntimeException('The third argument must be omitted, null or an array.');
+            throw new RuntimeException('The third argument must be omitted, null or an array.');
         }
 
         // apply the prototype options
@@ -121,15 +139,8 @@ abstract class BasePhpFormulaLoader implements FormulaLoaderInterface
             $options['name'] = $this->factory->generateAssetName($inputs, $filters, $options);
         }
 
-        return array($options['name'] => array($inputs, $filters, $options));
+        return [$options['name'] => [$inputs, $filters, $options]];
     }
-
-    /**
-     * Returns an array of prototypical calls and options.
-     *
-     * @return array Prototypes and options
-     */
-    abstract protected function registerPrototypes();
 
     /**
      * Returns setup code for the reflection scriptlet.
@@ -137,11 +148,6 @@ abstract class BasePhpFormulaLoader implements FormulaLoaderInterface
      * @return string Some PHP setup code
      */
     abstract protected function registerSetupCode();
-
-    protected static function tokenToString($token)
-    {
-        return is_array($token) ? $token[1] : $token;
-    }
 
     protected static function argumentToArray($argument)
     {

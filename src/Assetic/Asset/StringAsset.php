@@ -15,8 +15,8 @@ class StringAsset extends BaseAsset
     /**
      * Constructor.
      *
-     * @param string $content    The content of the asset
-     * @param array  $filters    Filters for the asset
+     * @param string $content The content of the asset
+     * @param array $filters Filters for the asset
      * @param string $sourceRoot The source asset root directory
      * @param string $sourcePath The source asset path
      */
@@ -32,13 +32,13 @@ class StringAsset extends BaseAsset
         $this->doLoad($this->string, $additionalFilter);
     }
 
-    public function setLastModified($lastModified)
-    {
-        $this->lastModified = $lastModified;
-    }
-
     public function getLastModified()
     {
         return $this->lastModified;
+    }
+
+    public function setLastModified($lastModified)
+    {
+        $this->lastModified = $lastModified;
     }
 }

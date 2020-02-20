@@ -1,9 +1,9 @@
 <?php namespace Assetic\Asset;
 
+use Assetic\Contracts\Asset\AssetInterface;
 use Assetic\Contracts\Cache\CacheInterface;
 use Assetic\Contracts\Filter\FilterInterface;
 use Assetic\Contracts\Filter\HashableInterface;
-use Assetic\Contracts\Asset\AssetInterface;
 
 /**
  * Caches an asset to avoid the cost of loading and dumping.
@@ -47,6 +47,51 @@ class AssetCache implements AssetInterface
 
         $this->asset->load($additionalFilter);
         $this->cache->set($cacheKey, $this->asset->getContent());
+    }
+
+    /**
+     * Returns a cache key for the current asset.
+     *
+     * The key is composed of everything but an asset's content:
+     *
+     *  * source root
+     *  * source path
+     *  * target url
+     *  * last modified
+     *  * filters
+     *
+     * @param AssetInterface $asset The asset
+     * @param FilterInterface $additionalFilter Any additional filter being applied
+     * @param string $salt Salt for the key
+     *
+     * @return string A key for identifying the current asset
+     */
+    private static function getCacheKey(AssetInterface $asset, FilterInterface $additionalFilter = null, $salt = '')
+    {
+        if ($additionalFilter) {
+            $asset = clone $asset;
+            $asset->ensureFilter($additionalFilter);
+        }
+
+        $cacheKey = $asset->getSourceRoot();
+        $cacheKey .= $asset->getSourcePath();
+        $cacheKey .= $asset->getTargetPath();
+        $cacheKey .= $asset->getLastModified();
+
+        foreach ($asset->getFilters() as $filter) {
+            if ($filter instanceof HashableInterface) {
+                $cacheKey .= $filter->hash();
+            } else {
+                $cacheKey .= serialize($filter);
+            }
+        }
+
+        if ($values = $asset->getValues()) {
+            asort($values);
+            $cacheKey .= serialize($values);
+        }
+
+        return md5($cacheKey . $salt);
     }
 
     public function dump(FilterInterface $additionalFilter = null)
@@ -115,50 +160,5 @@ class AssetCache implements AssetInterface
     public function getValues()
     {
         return $this->asset->getValues();
-    }
-
-    /**
-     * Returns a cache key for the current asset.
-     *
-     * The key is composed of everything but an asset's content:
-     *
-     *  * source root
-     *  * source path
-     *  * target url
-     *  * last modified
-     *  * filters
-     *
-     * @param AssetInterface  $asset            The asset
-     * @param FilterInterface $additionalFilter Any additional filter being applied
-     * @param string          $salt             Salt for the key
-     *
-     * @return string A key for identifying the current asset
-     */
-    private static function getCacheKey(AssetInterface $asset, FilterInterface $additionalFilter = null, $salt = '')
-    {
-        if ($additionalFilter) {
-            $asset = clone $asset;
-            $asset->ensureFilter($additionalFilter);
-        }
-
-        $cacheKey  = $asset->getSourceRoot();
-        $cacheKey .= $asset->getSourcePath();
-        $cacheKey .= $asset->getTargetPath();
-        $cacheKey .= $asset->getLastModified();
-
-        foreach ($asset->getFilters() as $filter) {
-            if ($filter instanceof HashableInterface) {
-                $cacheKey .= $filter->hash();
-            } else {
-                $cacheKey .= serialize($filter);
-            }
-        }
-
-        if ($values = $asset->getValues()) {
-            asort($values);
-            $cacheKey .= serialize($values);
-        }
-
-        return md5($cacheKey.$salt);
     }
 }

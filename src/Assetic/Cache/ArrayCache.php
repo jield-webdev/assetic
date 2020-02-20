@@ -1,6 +1,7 @@
 <?php namespace Assetic\Cache;
 
 use Assetic\Contracts\Cache\CacheInterface;
+use RuntimeException;
 
 /**
  * A simple array cache
@@ -12,23 +13,23 @@ class ArrayCache implements CacheInterface
     private $cache = [];
 
     /**
-     * @see CacheInterface::has()
-     */
-    public function has($key)
-    {
-        return isset($this->cache[$key]);
-    }
-
-    /**
      * @see CacheInterface::get()
      */
     public function get($key)
     {
         if (!$this->has($key)) {
-            throw new \RuntimeException('There is no cached value for '.$key);
+            throw new RuntimeException('There is no cached value for ' . $key);
         }
 
         return $this->cache[$key];
+    }
+
+    /**
+     * @see CacheInterface::has()
+     */
+    public function has($key)
+    {
+        return isset($this->cache[$key]);
     }
 
     /**

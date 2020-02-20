@@ -2,6 +2,8 @@
 
 use Assetic\Contracts\Filter\FilterInterface;
 use Assetic\Util\VarUtils;
+use InvalidArgumentException;
+use RuntimeException;
 
 /**
  * Represents an asset loaded from a file.
@@ -15,13 +17,13 @@ class FileAsset extends BaseAsset
     /**
      * Constructor.
      *
-     * @param string $source     An absolute path
-     * @param array  $filters    An array of filters
+     * @param string $source An absolute path
+     * @param array $filters An array of filters
      * @param string $sourceRoot The source asset root directory
      * @param string $sourcePath The source asset path
-     * @param array  $vars
+     * @param array $vars
      *
-     * @throws \InvalidArgumentException If the supplied root doesn't match the source when guessing the path
+     * @throws InvalidArgumentException If the supplied root doesn't match the source when guessing the path
      */
     public function __construct($source, $filters = [], $sourceRoot = null, $sourcePath = null, array $vars = [])
     {
@@ -32,7 +34,7 @@ class FileAsset extends BaseAsset
             }
         } elseif (null === $sourcePath) {
             if (0 !== strpos($source, $sourceRoot)) {
-                throw new \InvalidArgumentException(sprintf('The source "%s" is not in the root directory "%s"', $source, $sourceRoot));
+                throw new InvalidArgumentException(sprintf('The source "%s" is not in the root directory "%s"', $source, $sourceRoot));
             }
 
             $sourcePath = substr($source, strlen($sourceRoot) + 1);
@@ -48,7 +50,7 @@ class FileAsset extends BaseAsset
         $source = VarUtils::resolve($this->source, $this->getVars(), $this->getValues());
 
         if (!is_file($source)) {
-            throw new \RuntimeException(sprintf('The source file "%s" does not exist.', $source));
+            throw new RuntimeException(sprintf('The source file "%s" does not exist.', $source));
         }
 
         $this->doLoad(file_get_contents($source), $additionalFilter);
@@ -59,7 +61,7 @@ class FileAsset extends BaseAsset
         $source = VarUtils::resolve($this->source, $this->getVars(), $this->getValues());
 
         if (!is_file($source)) {
-            throw new \RuntimeException(sprintf('The source file "%s" does not exist.', $source));
+            throw new RuntimeException(sprintf('The source file "%s" does not exist.', $source));
         }
 
         return filemtime($source);

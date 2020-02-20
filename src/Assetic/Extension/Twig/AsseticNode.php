@@ -15,23 +15,23 @@ class AsseticNode extends Node
      *  * combine:  Whether to combine assets
      *  * var_name: The name of the variable to expose to the body node
      *
-     * @param AssetInterface $asset      The asset
-     * @param Node           $body       The body node
-     * @param array          $inputs     An array of input strings
-     * @param array          $filters    An array of filter strings
-     * @param string         $name       The name of the asset
-     * @param array          $attributes An array of attributes
-     * @param integer        $lineno     The line number
-     * @param string         $tag        The tag name
+     * @param AssetInterface $asset The asset
+     * @param Node $body The body node
+     * @param array $inputs An array of input strings
+     * @param array $filters An array of filter strings
+     * @param string $name The name of the asset
+     * @param array $attributes An array of attributes
+     * @param int $lineno The line number
+     * @param string $tag The tag name
      */
     public function __construct(AssetInterface $asset, Node $body, array $inputs, array $filters, $name, array $attributes = [], $lineno = 0, $tag = null)
     {
-        $nodes = array('body' => $body);
+        $nodes = ['body' => $body];
 
         $attributes = array_replace(
-            array('debug' => null, 'combine' => null, 'var_name' => 'asset_url'),
+            ['debug' => null, 'combine' => null, 'var_name' => 'asset_url'],
             $attributes,
-            array('asset' => $asset, 'inputs' => $inputs, 'filters' => $filters, 'name' => $name)
+            ['asset' => $asset, 'inputs' => $inputs, 'filters' => $filters, 'name' => $name]
         );
 
         parent::__construct($nodes, $attributes, $lineno, $tag);
@@ -42,7 +42,7 @@ class AsseticNode extends Node
         $compiler->addDebugInfo($this);
 
         $combine = $this->getAttribute('combine');
-        $debug = $this->getAttribute('debug');
+        $debug   = $this->getAttribute('debug');
 
         if (null === $combine && null !== $debug) {
             $combine = !$debug;
@@ -51,23 +51,20 @@ class AsseticNode extends Node
         if (null === $combine) {
             $compiler
                 ->write("if (isset(\$context['assetic']['debug']) && \$context['assetic']['debug']) {\n")
-                ->indent()
-            ;
+                ->indent();
 
             $this->compileDebug($compiler);
 
             $compiler
                 ->outdent()
                 ->write("} else {\n")
-                ->indent()
-            ;
+                ->indent();
 
             $this->compileAsset($compiler, $this->getAttribute('asset'), $this->getAttribute('name'));
 
             $compiler
                 ->outdent()
-                ->write("}\n")
-            ;
+                ->write("}\n");
         } elseif ($combine) {
             $this->compileAsset($compiler, $this->getAttribute('asset'), $this->getAttribute('name'));
         } else {
@@ -77,15 +74,14 @@ class AsseticNode extends Node
         $compiler
             ->write('unset($context[')
             ->repr($this->getAttribute('var_name'))
-            ->raw("]);\n")
-        ;
+            ->raw("]);\n");
     }
 
     protected function compileDebug(Compiler $compiler)
     {
         $i = 0;
         foreach ($this->getAttribute('asset') as $leaf) {
-            $leafName = $this->getAttribute('name').'_'.$i++;
+            $leafName = $this->getAttribute('name') . '_' . $i++;
             $this->compileAsset($compiler, $leaf, $leafName);
         }
     }
@@ -99,10 +95,9 @@ class AsseticNode extends Node
                 $compiler
                     ->write("if (!isset(\$context['assetic']['vars']['$var'])) {\n")
                     ->indent()
-                    ->write("throw new \RuntimeException(sprintf('The asset \"".$name."\" expected variable \"".$var."\" to be set, but got only these vars: %s. Did you set-up a value supplier?', isset(\$context['assetic']['vars']) && \$context['assetic']['vars'] ? implode(', ', \$context['assetic']['vars']) : '# none #'));\n")
+                    ->write("throw new \RuntimeException(sprintf('The asset \"" . $name . "\" expected variable \"" . $var . "\" to be set, but got only these vars: %s. Did you set-up a value supplier?', isset(\$context['assetic']['vars']) && \$context['assetic']['vars'] ? implode(', ', \$context['assetic']['vars']) : '# none #'));\n")
                     ->outdent()
-                    ->write("}\n")
-                ;
+                    ->write("}\n");
             }
 
             $compiler->raw("\n");
@@ -112,15 +107,13 @@ class AsseticNode extends Node
             ->write("// asset \"$name\"\n")
             ->write('$context[')
             ->repr($this->getAttribute('var_name'))
-            ->raw('] = ')
-        ;
+            ->raw('] = ');
 
         $this->compileAssetUrl($compiler, $asset, $name);
 
         $compiler
             ->raw(";\n")
-            ->subcompile($this->getNode('body'))
-        ;
+            ->subcompile($this->getNode('body'));
     }
 
     protected function compileAssetUrl(Compiler $compiler, AssetInterface $asset, $name)
@@ -144,13 +137,11 @@ class AsseticNode extends Node
             $first = false;
 
             $compiler
-                ->string("{".$var."}")
-                ->raw(" => \$context['assetic']['vars']['$var']")
-            ;
+                ->string("{" . $var . "}")
+                ->raw(" => \$context['assetic']['vars']['$var']");
         }
 
         $compiler
-            ->raw("))")
-        ;
+            ->raw("))");
     }
 }

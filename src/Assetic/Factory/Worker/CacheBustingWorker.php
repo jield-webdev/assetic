@@ -31,14 +31,14 @@ class CacheBustingWorker implements WorkerInterface
             return;
         }
 
-        $replace = $this->separator.$this->getHash($asset, $factory).'.'.$search;
-        if (preg_match('/'.preg_quote($replace, '/').'$/', $path)) {
+        $replace = $this->separator . $this->getHash($asset, $factory) . '.' . $search;
+        if (preg_match('/' . preg_quote($replace, '/') . '$/', $path)) {
             // already replaced
             return;
         }
 
         $asset->setTargetPath(
-            preg_replace('/\.'.preg_quote($search, '/').'$/', $replace, $path)
+            preg_replace('/\.' . preg_quote($search, '/') . '$/', $replace, $path)
         );
     }
 

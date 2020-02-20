@@ -1,6 +1,7 @@
 <?php namespace Assetic\Filter;
 
 use Assetic\Contracts\Asset\AssetInterface;
+use JSMinPlus;
 
 /**
  * Filters assets through JSMinPlus.
@@ -14,6 +15,6 @@ class JSMinPlusFilter extends BaseFilter
 {
     public function filterDump(AssetInterface $asset)
     {
-        $asset->setContent(\JSMinPlus::minify($asset->getContent()));
+        $asset->setContent(JSMinPlus::minify($asset->getContent()));
     }
 }

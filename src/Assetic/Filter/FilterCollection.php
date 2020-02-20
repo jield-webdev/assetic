@@ -1,14 +1,18 @@
 <?php namespace Assetic\Filter;
 
+use ArrayIterator;
 use Assetic\Contracts\Asset\AssetInterface;
 use Assetic\Contracts\Filter\FilterInterface;
+use Countable;
+use IteratorAggregate;
+use Traversable;
 
 /**
  * A collection of filters.
  *
  * @author Kris Wallsmith <kris.wallsmith@gmail.com>
  */
-class FilterCollection implements FilterInterface, \IteratorAggregate, \Countable
+class FilterCollection implements FilterInterface, IteratorAggregate, Countable
 {
     private $filters = [];
 
@@ -27,7 +31,7 @@ class FilterCollection implements FilterInterface, \IteratorAggregate, \Countabl
      */
     public function ensure(FilterInterface $filter)
     {
-        if ($filter instanceof \Traversable) {
+        if ($filter instanceof Traversable) {
             foreach ($filter as $f) {
                 $this->ensure($f);
             }
@@ -62,7 +66,7 @@ class FilterCollection implements FilterInterface, \IteratorAggregate, \Countabl
 
     public function getIterator()
     {
-        return new \ArrayIterator($this->filters);
+        return new ArrayIterator($this->filters);
     }
 
     public function count()

@@ -1,8 +1,8 @@
 <?php namespace Assetic\Extension\Twig;
 
 use Assetic\Contracts\Factory\Resource\ResourceInterface;
-use Twig\Loader\LoaderInterface;
 use Twig\Error\LoaderError;
+use Twig\Loader\LoaderInterface;
 
 /**
  * A Twig template resource.
@@ -17,7 +17,7 @@ class TwigResource implements ResourceInterface
     public function __construct(LoaderInterface $loader, $name)
     {
         $this->loader = $loader;
-        $this->name = $name;
+        $this->name   = $name;
     }
 
     public function getContent()

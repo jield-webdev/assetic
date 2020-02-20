@@ -1,6 +1,7 @@
 <?php namespace Assetic\Filter;
 
 use Assetic\Contracts\Asset\AssetInterface;
+use CssMin;
 
 /**
  * Filters assets through CssMin.
@@ -46,12 +47,12 @@ class CssMinFilter extends BaseFilter
 
         if (isset($filters['ImportImports']) && true === $filters['ImportImports']) {
             if ($dir = $asset->getSourceDirectory()) {
-                $filters['ImportImports'] = array('BasePath' => $dir);
+                $filters['ImportImports'] = ['BasePath' => $dir];
             } else {
                 unset($filters['ImportImports']);
             }
         }
 
-        $asset->setContent(\CssMin::minify($asset->getContent(), $filters, $plugins));
+        $asset->setContent(CssMin::minify($asset->getContent(), $filters, $plugins));
     }
 }

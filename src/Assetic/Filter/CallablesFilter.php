@@ -1,9 +1,9 @@
 <?php namespace Assetic\Filter;
 
 use Assetic\Contracts\Asset\AssetInterface;
-use Assetic\Factory\AssetFactory;
-use Assetic\Contracts\Filter\FilterInterface;
 use Assetic\Contracts\Filter\DependencyExtractorInterface;
+use Assetic\Contracts\Filter\FilterInterface;
+use Assetic\Factory\AssetFactory;
 
 /**
  * A filter that wraps callables.
@@ -23,8 +23,8 @@ class CallablesFilter implements FilterInterface, DependencyExtractorInterface
      */
     public function __construct($loader = null, $dumper = null, $extractor = null)
     {
-        $this->loader = $loader;
-        $this->dumper = $dumper;
+        $this->loader    = $loader;
+        $this->dumper    = $dumper;
         $this->extractor = $extractor;
     }
 

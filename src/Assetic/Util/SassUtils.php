@@ -7,5 +7,5 @@
  */
 abstract class SassUtils extends CssUtils
 {
-    const REGEX_COMMENTS = '/((?:\/\*[^*]*\*+(?:[^\/][^*]*\*+)*\/)|\/\/[^\n]+)/';
+    public const REGEX_COMMENTS = '/((?:\/\*[^*]*\*+(?:[^\/][^*]*\*+)*\/)|\/\/[^\n]+)/';
 }

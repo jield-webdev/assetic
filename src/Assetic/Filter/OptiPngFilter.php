@@ -1,8 +1,6 @@
 <?php namespace Assetic\Filter;
 
 use Assetic\Contracts\Asset\AssetInterface;
-use Assetic\Exception\FilterException;
-use Assetic\Util\FilesystemUtils;
 
 /**
  * Runs assets through OptiPNG.
@@ -28,16 +26,6 @@ class OptiPngFilter extends BaseProcessFilter
         $this->level = $level;
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    protected function getOutputPath()
-    {
-        $path = parent::getOutputPath();
-        unlink($path);
-        return $path;
-    }
-
     public function filterDump(AssetInterface $asset)
     {
         $args = [];
@@ -55,5 +43,15 @@ class OptiPngFilter extends BaseProcessFilter
         $result = $this->runProcess($asset->getContent(), $args);
 
         $asset->setContent($result);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getOutputPath()
+    {
+        $path = parent::getOutputPath();
+        unlink($path);
+        return $path;
     }
 }

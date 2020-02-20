@@ -1,6 +1,10 @@
 <?php namespace Assetic\Factory\Resource;
 
 use Assetic\Contracts\Factory\Resource\IteratorResourceInterface;
+use EmptyIterator;
+use RecursiveDirectoryIterator;
+use RecursiveFilterIterator;
+use RecursiveIteratorIterator;
 
 /**
  * A resource is something formulae can be loaded from.
@@ -15,7 +19,7 @@ class DirectoryResource implements IteratorResourceInterface
     /**
      * Constructor.
      *
-     * @param string $path    A directory path
+     * @param string $path A directory path
      * @param string $pattern A filename pattern
      */
     public function __construct($path, $pattern = null)
@@ -24,7 +28,7 @@ class DirectoryResource implements IteratorResourceInterface
             $path .= DIRECTORY_SEPARATOR;
         }
 
-        $this->path = $path;
+        $this->path    = $path;
         $this->pattern = $pattern;
     }
 
@@ -65,12 +69,12 @@ class DirectoryResource implements IteratorResourceInterface
     {
         return is_dir($this->path)
             ? new DirectoryResourceIterator($this->getInnerIterator())
-            : new \EmptyIterator();
+            : new EmptyIterator();
     }
 
     protected function getInnerIterator()
     {
-        return new DirectoryResourceFilterIterator(new \RecursiveDirectoryIterator($this->path, \RecursiveDirectoryIterator::FOLLOW_SYMLINKS), $this->pattern);
+        return new DirectoryResourceFilterIterator(new RecursiveDirectoryIterator($this->path, RecursiveDirectoryIterator::FOLLOW_SYMLINKS), $this->pattern);
     }
 }
 
@@ -80,7 +84,7 @@ class DirectoryResource implements IteratorResourceInterface
  * @author Kris Wallsmith <kris.wallsmith@gmail.com>
  * @access private
  */
-class DirectoryResourceIterator extends \RecursiveIteratorIterator
+class DirectoryResourceIterator extends RecursiveIteratorIterator
 {
     public function current()
     {
@@ -94,11 +98,11 @@ class DirectoryResourceIterator extends \RecursiveIteratorIterator
  * @author Kris Wallsmith <kris.wallsmith@gmail.com>
  * @access private
  */
-class DirectoryResourceFilterIterator extends \RecursiveFilterIterator
+class DirectoryResourceFilterIterator extends RecursiveFilterIterator
 {
     protected $pattern;
 
-    public function __construct(\RecursiveDirectoryIterator $iterator, $pattern = null)
+    public function __construct(RecursiveDirectoryIterator $iterator, $pattern = null)
     {
         parent::__construct($iterator);
 
@@ -119,6 +123,6 @@ class DirectoryResourceFilterIterator extends \RecursiveFilterIterator
 
     public function getChildren()
     {
-        return new self(new \RecursiveDirectoryIterator($this->current()->getPathname(), \RecursiveDirectoryIterator::FOLLOW_SYMLINKS), $this->pattern);
+        return new self(new RecursiveDirectoryIterator($this->current()->getPathname(), RecursiveDirectoryIterator::FOLLOW_SYMLINKS), $this->pattern);
     }
 }

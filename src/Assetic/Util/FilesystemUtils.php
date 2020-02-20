@@ -1,5 +1,10 @@
 <?php namespace Assetic\Util;
 
+use FilesystemIterator;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use SplFileInfo;
+
 /**
  * Filesystem utilities.
  *
@@ -12,8 +17,8 @@ class FilesystemUtils
      */
     public static function removeDirectory($directory)
     {
-        $inner = new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS);
-        $outer = new \RecursiveIteratorIterator($inner, \RecursiveIteratorIterator::SELF_FIRST);
+        $inner = new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS);
+        $outer = new RecursiveIteratorIterator($inner, RecursiveIteratorIterator::SELF_FIRST);
 
         // remove the files first
         foreach ($outer as $file) {
@@ -25,7 +30,7 @@ class FilesystemUtils
         // remove the sub-directories next
         $files = iterator_to_array($outer);
         foreach (array_reverse($files) as $file) {
-            /** @var \SplFileInfo $file */
+            /** @var SplFileInfo $file */
             if ($file->isDir()) {
                 rmdir($file);
             }
@@ -55,6 +60,16 @@ class FilesystemUtils
     }
 
     /**
+     * Gets the path to the temporary directory
+     *
+     * @return string
+     */
+    public static function getTemporaryDirectory()
+    {
+        return realpath(sys_get_temp_dir());
+    }
+
+    /**
      * Creates a temporary file and optionally writes to it.
      *
      * @param string $prefix A prefix for the file name
@@ -71,15 +86,5 @@ class FilesystemUtils
         }
 
         return $tmpFile;
-    }
-
-    /**
-     * Gets the path to the temporary directory
-     *
-     * @return string
-     */
-    public static function getTemporaryDirectory()
-    {
-        return realpath(sys_get_temp_dir());
     }
 }

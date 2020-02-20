@@ -1,6 +1,7 @@
 <?php namespace Assetic\Filter;
 
 use Assetic\Contracts\Asset\AssetInterface;
+use JavaScriptPacker;
 
 /**
  * Runs assets through Packager, a JavaScript Compressor/Obfuscator.
@@ -25,17 +26,17 @@ class PackerFilter extends BaseFilter
 
     public function setFastDecode($fastDecode)
     {
-        $this->fastDecode = (bool) $fastDecode;
+        $this->fastDecode = (bool)$fastDecode;
     }
 
     public function setSpecialChars($specialChars)
     {
-        $this->specialChars = (bool) $specialChars;
+        $this->specialChars = (bool)$specialChars;
     }
 
     public function filterDump(AssetInterface $asset)
     {
-        $packer = new \JavaScriptPacker($asset->getContent(), $this->encoding, $this->fastDecode, $this->specialChars);
+        $packer = new JavaScriptPacker($asset->getContent(), $this->encoding, $this->fastDecode, $this->specialChars);
         $asset->setContent($packer->pack());
     }
 }

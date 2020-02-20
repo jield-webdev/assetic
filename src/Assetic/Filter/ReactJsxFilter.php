@@ -3,7 +3,6 @@
 namespace Assetic\Filter;
 
 use Assetic\Contracts\Asset\AssetInterface;
-use Assetic\Exception\FilterException;
 use Assetic\Util\FilesystemUtils;
 
 /**
@@ -18,6 +17,21 @@ class ReactJsxFilter extends BaseNodeFilter
      * @var string Path to the binary for this process based filter
      */
     protected $binaryPath = '/usr/bin/jsx';
+
+    /**
+     * {@inheritDoc}
+     */
+    public function filterLoad(AssetInterface $asset)
+    {
+        $args = [
+            '{INPUT}',
+            '{OUTPUT}',
+            '--no-cache-dir',
+        ];
+
+        $result = $this->runProcess($asset->getContent(), $args);
+        $asset->setContent($result);
+    }
 
     /**
      * {@inheritDoc}
@@ -43,20 +57,5 @@ class ReactJsxFilter extends BaseNodeFilter
     protected function getOutput()
     {
         return file_get_contents($this->outputPath . '/asset.js');
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    public function filterLoad(AssetInterface $asset)
-    {
-        $args = [
-            '{INPUT}',
-            '{OUTPUT}',
-            '--no-cache-dir',
-        ];
-
-        $result = $this->runProcess($asset->getContent(), $args);
-        $asset->setContent($result);
     }
 }

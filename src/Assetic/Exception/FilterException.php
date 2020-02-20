@@ -1,6 +1,7 @@
 <?php namespace Assetic\Exception;
 
 use Assetic\Contracts\Exception\Exception;
+use RuntimeException;
 use Symfony\Component\Process\Process;
 
 /**
@@ -8,10 +9,17 @@ use Symfony\Component\Process\Process;
  *
  * @author Johannes M. Schmitt <schmittjoh@gmail.com>
  */
-class FilterException extends \RuntimeException implements Exception
+class FilterException extends RuntimeException implements Exception
 {
     private $originalMessage;
     private $input;
+
+    public function __construct($message, $code = 0, \Exception $previous = null)
+    {
+        parent::__construct($message, $code, $previous);
+
+        $this->originalMessage = $message;
+    }
 
     public static function fromProcess(Process $proc)
     {
@@ -19,22 +27,20 @@ class FilterException extends \RuntimeException implements Exception
 
         $errorOutput = $proc->getErrorOutput();
         if (!empty($errorOutput)) {
-            $message .= "\n\nError Output:\n".str_replace("\r", '', $errorOutput);
+            $message .= "\n\nError Output:\n" . str_replace("\r", '', $errorOutput);
         }
 
         $output = $proc->getOutput();
         if (!empty($output)) {
-            $message .= "\n\nOutput:\n".str_replace("\r", '', $output);
+            $message .= "\n\nOutput:\n" . str_replace("\r", '', $output);
         }
 
         return new self($message);
     }
 
-    public function __construct($message, $code = 0, \Exception $previous = null)
+    public function getInput()
     {
-        parent::__construct($message, $code, $previous);
-
-        $this->originalMessage = $message;
+        return $this->input;
     }
 
     public function setInput($input)
@@ -45,17 +51,12 @@ class FilterException extends \RuntimeException implements Exception
         return $this;
     }
 
-    public function getInput()
-    {
-        return $this->input;
-    }
-
     private function updateMessage()
     {
         $message = $this->originalMessage;
 
         if (!empty($this->input)) {
-            $message .= "\n\nInput:\n".$this->input;
+            $message .= "\n\nInput:\n" . $this->input;
         }
 
         $this->message = $message;

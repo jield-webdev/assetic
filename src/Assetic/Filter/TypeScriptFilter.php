@@ -1,7 +1,6 @@
 <?php namespace Assetic\Filter;
 
 use Assetic\Contracts\Asset\AssetInterface;
-use Assetic\Exception\FilterException;
 use Assetic\Util\FilesystemUtils;
 
 /**
@@ -20,17 +19,6 @@ class TypeScriptFilter extends BaseNodeFilter
     /**
      * {@inheritDoc}
      */
-    protected function getInputPath(string $input)
-    {
-        $prefix = preg_replace('/[^\w]/', '', static::class);
-        $path = FilesystemUtils::createThrowAwayDirectory($prefix) . '/input.ts';
-        file_put_contents($path, $input);
-        return $path;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public function filterLoad(AssetInterface $asset)
     {
         $args = [
@@ -41,5 +29,16 @@ class TypeScriptFilter extends BaseNodeFilter
 
         $result = $this->runProcess($asset->getContent(), $args);
         $asset->setContent($result);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    protected function getInputPath(string $input)
+    {
+        $prefix = preg_replace('/[^\w]/', '', static::class);
+        $path   = FilesystemUtils::createThrowAwayDirectory($prefix) . '/input.ts';
+        file_put_contents($path, $input);
+        return $path;
     }
 }
